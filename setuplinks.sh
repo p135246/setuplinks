@@ -3,15 +3,10 @@
 # MIT License
 ##################################################
 # File: setuplinks
-# Description: Setup a list of symbolic links
+# Description: Sets up a list of symbolic links
 # Author: Pavel Hajek
 # License: MIT
 # Version: 1.0
-##################################################
-
-
-##################################################
-#TODO: Write LoadLists and  read the lists from a file
 ##################################################
 
 # ===============================	
@@ -24,7 +19,7 @@ Help()
 	echo "NAME:"
 	echo "   setuplinks"
 	echo "SYNTAX:"
-	echo "   setuplinks [-b|d|f|h|i|v|s] CONTROLFILE"
+	echo "   setuplinks [-b|d|f|h|i|r|s|v] CONTROLFILE"
 	echo "DESCRIPTION:"
 	echo "   Creates symbolink links TARGET<-LINKNAME as specified in the"
 	echo "   CONTROLFILE in two tab-separated columns. By default, runs 'ln'"
@@ -35,8 +30,9 @@ Help()
 	echo "   -f     If LINKNAME exists, it is deleted without confirmation." 
 	echo "   -h     Prints this help."
 	echo "   -i     Asks for confirmation before every file operation."
-	echo "   -v     Verbose mode. Prints out every file operation."
+	echo "   -r     Revert changes by replacing LINKNAME with LINKNAME.bck"
 	echo "   -s     Silent  mode. Does not print out progress."
+	echo "   -v     Verbose mode. Prints out every file operation."
 	echo "AUTHOR:"
 	echo "   Written by Pavel Hajek."
 	echo "COPYRIGHT:"
@@ -77,6 +73,13 @@ LoadLists()
 		fi
 	done < $1
 }
+
+Message()
+{
+	if [ ! $SILENT -eq 1 ]; then
+		echo $1
+	fi
+}
 # ===============================	
 # PROCESS OPTIONS
 # ===============================	
@@ -86,6 +89,7 @@ LoadLists()
 	INTERACTIVE=0
 	VERBOSE=0
 	SILENT=0
+	REVERT=0
 	while [ -n "$1" ]
 	do
 		case "$1" in
@@ -95,8 +99,9 @@ LoadLists()
 		-h) 	Help
 			exit ;;
 		-i) INTERACTIVE=1 ;;
-		-v) VERBOSE=1 ;;
+		-r) REVERT=1 ;;
 		-s) SILENT=1 ;;
+		-v) VERBOSE=1 ;;
 		*)  	FILENAME=$1
 			shift
 			if [ -n "$1" ]; then
@@ -138,29 +143,34 @@ LoadLists()
 	fi
 # ===============================	
 # MAIN
-# ===============================	
+# ===============================
+	if [ $REVERT -eq 1 ]; then
+		for ((i = 0 ; i < $LENTARGETS ; i++)); do
+			if [ -f "${LINKNAMES[$i]}.bck" ] || [ -d "${LINKNAMES[$i]}.bck" ]; then
+				Message "Recovering ${LINKNAMES[$i]} from the backup."
+				RunCommand "mv -f '${LINKNAMES[$i]}.bck' '${LINKNAMES[$i]}'"
+			else
+				Message "Backup of ${LINKNAMES[$i]} does not exist. Skipping."
+			fi
+		done
+		exit
+	fi
 	for ((i = 0 ; i < $LENTARGETS ; i++)); do
 		if [ -f "${TARGETS[$i]}" ] || [ -d "${TARGETS[$i]}" ]; then
 			if [ -f "${LINKNAMES[$i]}" ] || [ -d "${LINKNAMES[$i]}" ]; then 
 				if [ $BACKUP -eq 1 ]; then
-					if [ ! $SILENT -eq 1 ]; then
-						echo "Backing up ${LINKNAMES[$i]}."
-					fi
+					Message "Backing up ${LINKNAMES[$i]}."
 					RunCommand "mv -b '${LINKNAMES[$i]}' '${LINKNAMES[$i]}.bck'"
 				fi		
 			fi
-			if [ ! $SILENT -eq 1 ]; then
-				echo "Creating symbolic link ${LINKNAMES[$i]} with target ${TARGETS[$i]}"
-			fi		
+			Message "Creating symbolic link ${LINKNAMES[$i]} with target ${TARGETS[$i]}"
 			if [ $FORCE -eq 1 ]; then
 				RunCommand "ln -n -f -s '${TARGETS[$i]}' '${LINKNAMES[$i]}'"	
 			else
 				RunCommand "ln -n -i -s '${TARGETS[$i]}' '${LINKNAMES[$i]}'"	
 			fi
 		else
-			if [ ! $SILENT -eq 1 ]; then
-				echo "File or directory '${TARGETS[$i]}' does not exist. Skipping."
-			fi
+			Message "File or directory '${TARGETS[$i]}' does not exist. Skipping."
 		fi
 	done
 	exit 0
