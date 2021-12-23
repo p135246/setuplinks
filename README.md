@@ -1,11 +1,11 @@
 ### NAME:
    setuplinks
 ### SYNTAX:
-   setuplinks [-b|d|f|h|i] CONTROLFILE
+   setuplinks [-b|d|f|h|i|v|s] CONTROLFILE
 ### DESCRIPTION:
    Creates symbolink links TARGET<-LINKNAME as specified in the
-   CONTROLFILE in two tab-separated columns. Runs 'ln' in the
-   interactive mode by default.
+   CONTROLFILE in two tab-separated columns. By default, runs 'ln'
+   in the interactive mode and prints out progress.
    
    * **-b**       If LINKNAME exists, it is moved to LINKNAME.bck.
                   If LINKNAME.bck exists, it is moved to LINKNAME.bck~
@@ -20,4 +20,4 @@
    
    * **-v**     Verbose mode. Prints out every file operation.
    
-   * **-s**     Silent  mode. Does not print out progress and warnings.
+   * **-s**     Silent  mode. Does not print out progress.
