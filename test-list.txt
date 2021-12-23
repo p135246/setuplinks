@@ -1,0 +1,5 @@
+# This is a test list
+./a	./aa
+./b	./bb
+./c	./cc
+./d	./dd
