@@ -1,6 +1,6 @@
 # Setuplinks
 ## About
-The BASH script `setuplinks` creates a batch of symbolic links according to a two-columns list in a given file.
+The BASH script `setuplinks` creates a batch of symbolic links as specified relative to the home directory in a two-column tab-separated list (first target and then link name) in a file.
 It is useful to link files and folders in various cloud drives to the local machine, e.g., `ln -s ~/Dropbox/dotfiles/bashrc ~/.bashrc`.
 Moreover, `setuplinks` has an option to create backups of existing files and revert changes.
 ## Manual
