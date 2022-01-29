@@ -1,8 +1,21 @@
 # Setuplinks
 ## About
-The BASH script `setuplinks` creates a batch of symbolic links as specified relative to the home directory in a two-column tab-separated list (first target and then link name) in a file.
-It is useful to link files and folders in various cloud drives to the local machine, e.g., `ln -s ~/Dropbox/dotfiles/bashrc ~/.bashrc`.
-Moreover, `setuplinks` has an option to create backups of existing files and revert changes.
+The command `setuplinks input-file` creates a batch of symbolic links according to a given file `input-file` which contains on each line a target name and a link name relative to the home directory separated by TAB (use `#` at the beginning of the line to make a comment).
+It is useful to link files and folders in various cloud drives to the local machine when setting up a new computer and helps with organization.
+For example, instead of running
+```
+     ln -s ~/Dropbox/dotfiles/bashrc ~/.bashrc
+     ln -s ~/OneDrive/Signature ~/Pictures/signature
+```
+one creates a file `my-links` containing
+```
+     # Dropbox
+     Dropbox/dotfiles/bashrc	.bashrc
+     # OneDrive
+     OneDrive/Signature		Pictures/signature
+```
+and runs `setuplinks my-links`.
+Moreover, one can add the option `-b` to backup existing files or the option `-r` to revert files from backups.
 ## Manual
 ### NAME:
    setuplinks
