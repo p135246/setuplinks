@@ -4,8 +4,8 @@
    setuplinks [-b|d|f|h|i|r|s|v] CONTROLFILE
 ### DESCRIPTION:
    Creates symbolink links TARGET<-LINKNAME as specified in the
-   CONTROLFILE in two tab-separated columns. By default, runs 'ln'
-   in the interactive mode and prints out progress.
+   CONTROLFILE in two tab-separated columns relative to the user's HOME directory.
+   Runs 'ln' in the interactive mode and prints out progress by default.
    
    * **-b**       If LINKNAME exists, it is moved to LINKNAME.bck.
                   If LINKNAME.bck exists, it is moved to LINKNAME.bck~

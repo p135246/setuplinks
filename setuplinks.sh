@@ -22,8 +22,8 @@ Help()
 	echo "   setuplinks [-b|d|f|h|i|r|s|v] CONTROLFILE"
 	echo "DESCRIPTION:"
 	echo "   Creates symbolink links TARGET<-LINKNAME as specified in the"
-	echo "   CONTROLFILE in two tab-separated columns. By default, runs 'ln'"
-	echo "   in the interactive mode and prints out progress."
+	echo "   CONTROLFILE in two tab-separated columns relative to user's HOME directory."
+	echo "   Runs 'ln' in the interactive mode and prints out progress by default."
 	echo "   -b     If LINKNAME exists, it is moved to LINKNAME.bck."
 	echo "          If LINKNAME.bck exists, it is moved to LINKNAME.bck~"
 	echo "   -d     Dry run."
@@ -49,16 +49,20 @@ RunCommand()
 		read -p "Press [Yy] to continue: " -n 1 -r
 		echo
 		if [[ $REPLY =~ ^[Yy]$ ]]; then
-			if [ $DRY -eq 0 ]; then
-				eval "$1"
-			fi
+			CONTINUE=1
 		else
-			echo "Skipping."
+			CONTINUE=0
 		fi
+	fi
+	if [ $DRY -eq 0 ]; then
+		CONTINUE=1
 	else
-		if [ $DRY -eq 0 ]; then
-			eval "$1"
-		fi
+		CONTINUE=0
+	fi
+	if [ $CONTINUE -eq 1 ]; then	
+		eval "$1"
+	else
+		echo "Skipping."
 	fi
 }
 
@@ -67,8 +71,8 @@ LoadLists()
 	while IFS=$'\t' read -r COL1 COL2 REM
 	do
 		if [[ ! "$COL1" =~ \#.* ]]; then 	
-			TARGETS+=("$COL1")
-			LINKNAMES+=("$COL2")	 
+			TARGETS+=("$HOME/$COL1")
+			LINKNAMES+=("$HOME/$COL2")	 
 			REMAINDERS+=("$REST")
 		fi
 	done < $1
@@ -105,7 +109,7 @@ Message()
 		*)  	FILENAME=$1
 			shift
 			if [ -n "$1" ]; then
-				echo "Error: Arguments in wrong format. See help."
+				echo "Error: Arguments in wrong format. Run with -h for help."
 				exit -1
 			else
 			       break
@@ -118,9 +122,11 @@ Message()
 # ===============================	
 # LOAD LISTS
 # ===============================	
+
+	cd $HOME
   
 	if [ ! -n "$FILENAME" ]; then
-		echo "Error: Control file not specified. See help."
+		echo "Error: Control file not specified. Run with -h for help."
 		exit -1
 	fi
 	if [ ! -f "$FILENAME" ]; then
@@ -138,7 +144,7 @@ Message()
 	LENTARGETS=${#TARGETS[@]}
 
 	if [ ! $LENTARGETS -eq $LENLINKNAMES ]; then
-		echo "Error: '$FILENAME' has wrong format."
+		echo "Error: '$FILENAME' has wrong format. Run with -h for help."
 		exit -1	
 	fi
 # ===============================	
