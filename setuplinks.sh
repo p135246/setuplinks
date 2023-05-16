@@ -170,6 +170,7 @@ Message()
 				fi		
 			fi
 			Message "Creating symbolic link ${LINKNAMES[$i]} with target ${TARGETS[$i]}"
+			mkdir -p "$(dirname ${LINKNAMES[$i]})"
 			if [ $FORCE -eq 1 ]; then
 				RunCommand "ln -n -f -s '${TARGETS[$i]}' '${LINKNAMES[$i]}'"	
 			else
