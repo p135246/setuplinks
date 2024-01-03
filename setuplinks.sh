@@ -6,12 +6,18 @@
 # Description: Sets up a list of symbolic links
 # Author: Pavel Hajek
 # License: MIT
-# Version: 1.1
+VERSION=1.1
 ##################################################
 
 # ===============================	
 # FUNCTIONS
 # ===============================	
+
+Version()
+{
+	# Display Version
+	echo "$VERSION"
+}
 
 Help()
 {
@@ -19,25 +25,29 @@ Help()
 	echo "NAME:"
 	echo "   setuplinks"
 	echo "SYNTAX:"
-	echo "   setuplinks [-b|d|f|h|i|r|s|v] FILE"
+	echo "   setuplinks [-b|d|f|h|i|r|s|v|V] FILE"
 	echo "DESCRIPTION:"
 	echo "   Creates a symbolic link LINKNAME->TARGET for each line of FILE"
 	echo "   in the form 'LINKNAME;TARGET'. Only lines starting with '#' are ignored."
 	echo "   By default, the interactive mode of 'ln' is invoked (asks before"
-	echo "   replacement) and the progress is printed."
+	echo "   replacement) and the progress is printed. The modifiers can be combined"
+	echo "   as '-b -f -s' ('-bfs' does not work)."
 	echo "MODIFIERS:"
 	echo "   -b     Backup: If LINKNAME exists, it is moved to LINKNAME.bck"
 	echo "          (in the same folder)."
 	echo "   -d     Dry run: Does not make any changes on files."
 	echo "   -f     Non-interactive mode of 'ln': If LINKNAME exists, it is"
-	echo "          deleted without confirmation."
-	echo "   -h     Prints this help."
+	echo "          replaced by the newly created symlink without any confirmation."
+	echo "          If combined with '-b', the backup LINKNAME.bck is created"
+	echo "          before the replacement."
+	echo "   -h     Prints this help and quits."
 	echo "   -i     Interactive mode: Requires confirmation of every file operation."
 	echo "   -r     Restore: If LINKNAME.bck exists, it is switched with LINKNAME."
-	echo "   -s     Silent  mode: Does not print out any progress."
-	echo "   -v     Verbose mode: Prints out each file-command."
+	echo "   -s     Silent  mode: Does not print any progress."
+	echo "   -v     Prints the version and quits."
+	echo "   -V     Verbose mode: Prints out each file-command."
 	echo "AUTHOR:"
-	echo "   Written by Pavel Hajek."
+	echo "   Pavel Hajek."
 	echo "COPYRIGHT:"
 	echo "   MIT License © 2021 Pavel Hajek"
 }
@@ -108,7 +118,9 @@ Message()
 		-i) INTERACTIVE=1 ;;
 		-r) REVERT=1 ;;
 		-s) SILENT=1 ;;
-		-v) VERBOSE=1 ;;
+		-v) 	Version
+			exit ;;
+		-V) VERBOSE=1 ;;
 		*)  FILENAME=`eval echo $1`
 			shift
 			if [ -n "$1" ]; then
