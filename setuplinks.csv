@@ -1,0 +1,7 @@
+# This is an example file for setuplinks.sh
+# OneDrive
+~/.bashrc;~/OneDrive/dotfiles/bashrc
+# GoogleDrive
+~/Pictures/signature.svg;~/GoogleDrive/signature.svg
+# Dropbox
+~/papers/paper1;~/Dropbox/shared/collaborators/paper1

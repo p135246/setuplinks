@@ -6,7 +6,7 @@
 # Description: Sets up a list of symbolic links
 # Author: Pavel Hajek
 # License: MIT
-# Version: 1.0
+# Version: 1.1
 ##################################################
 
 # ===============================	
@@ -19,24 +19,27 @@ Help()
 	echo "NAME:"
 	echo "   setuplinks"
 	echo "SYNTAX:"
-	echo "   setuplinks [-b|d|f|h|i|r|s|v] CONTROLFILE"
+	echo "   setuplinks [-b|d|f|h|i|r|s|v] FILE"
 	echo "DESCRIPTION:"
-	echo "   Creates symbolink links TARGET<-LINKNAME as specified in the"
-	echo "   CONTROLFILE in two tab-separated columns relative to user's HOME directory."
-	echo "   Runs 'ln' in the interactive mode and prints out progress by default."
-	echo "   -b     If LINKNAME exists, it is moved to LINKNAME.bck."
-	echo "          If LINKNAME.bck exists, it is moved to LINKNAME.bck~"
-	echo "   -d     Dry run."
-	echo "   -f     If LINKNAME exists, it is deleted without confirmation." 
+	echo "   Creates a symbolink link LINKNAME->TARGET for each line of FILE"
+	echo "   in the form 'LINKNAME;TARGET'. Only lines starting with '#' are ignored."
+	echo "   By default, the interactive mode of 'ln' is invoked (asks before"
+	echo "   replacement) and the progress is printed."
+	echo "MODIFIERS:"
+	echo "   -b     Backup: If LINKNAME exists, it is moved to LINKNAME.bck"
+	echo "          (in the same folder)."
+	echo "   -d     Dry run: Does not make any changes on files."
+	echo "   -f     Non-interactive mode of 'ln': If LINKNAME exists, it is"
+	echo "          deleted without confirmation."
 	echo "   -h     Prints this help."
-	echo "   -i     Asks for confirmation before every file operation."
-	echo "   -r     Revert changes by replacing LINKNAME with LINKNAME.bck"
-	echo "   -s     Silent  mode. Does not print out progress."
-	echo "   -v     Verbose mode. Prints out every file operation."
+	echo "   -i     Interactive mode: Requires confirmation of every file operation."
+	echo "   -r     Restore: If LINKNAME.bck exists, it is switched with LINKNAME."
+	echo "   -s     Silent  mode: Does not print out any progress."
+	echo "   -v     Verbose mode: Prints out each file-command."
 	echo "AUTHOR:"
 	echo "   Written by Pavel Hajek."
 	echo "COPYRIGHT:"
-	echo "   MIT License © 2021 Pavel Hajek" 
+	echo "   MIT License © 2021 Pavel Hajek"
 }
 
 
@@ -68,11 +71,11 @@ RunCommand()
 
 LoadLists()
 {
-	while IFS=$'\t' read -r COL1 COL2 REM
+	while IFS=$';' read -r COL1 COL2 REM
 	do
 		if [[ ! "$COL1" =~ \#.* ]]; then 	
-			TARGETS+=("$HOME/$COL1")
-			LINKNAMES+=("$HOME/$COL2")	 
+			TARGETS+=("`eval echo $COL2`")
+			LINKNAMES+=("`eval echo $COL1`")
 			REMAINDERS+=("$REST")
 		fi
 	done < $1
@@ -106,7 +109,7 @@ Message()
 		-r) REVERT=1 ;;
 		-s) SILENT=1 ;;
 		-v) VERBOSE=1 ;;
-		*)  	FILENAME=$1
+		*)  FILENAME=`eval echo $1`
 			shift
 			if [ -n "$1" ]; then
 				echo "Error: Arguments in wrong format. Run with -h for help."
@@ -122,8 +125,6 @@ Message()
 # ===============================	
 # LOAD LISTS
 # ===============================	
-
-	cd $HOME
   
 	if [ ! -n "$FILENAME" ]; then
 		echo "Error: Control file not specified. Run with -h for help."
@@ -153,21 +154,28 @@ Message()
 	if [ $REVERT -eq 1 ]; then
 		for ((i = 0 ; i < $LENTARGETS ; i++)); do
 			if [ -f "${LINKNAMES[$i]}.bck" ] || [ -d "${LINKNAMES[$i]}.bck" ]; then
-				Message "Recovering ${LINKNAMES[$i]} from the backup."
-				RunCommand "mv -f '${LINKNAMES[$i]}.bck' '${LINKNAMES[$i]}'"
+				Message "Swapping ${LINKNAMES[$i]} and ${LINKNAMES[$i]}.bck."
+				RANDSTRING=$(cat /dev/urandom | tr -cd 'a-f0-9' | head -c 20)
+				RunCommand "mv '${LINKNAMES[$i]}' '/tmp/$RANDSTRING'; mv '${LINKNAMES[$i]}.bck' '${LINKNAMES[$i]}'; mv '/tmp/$RANDSTRING' '${LINKNAMES[$i]}.bck'"
 			else
-				Message "Backup of ${LINKNAMES[$i]} does not exist. Skipping."
+				Message "Backup ${LINKNAMES[$i]}.bck does not exist. Skipping."
 			fi
 		done
 		exit
 	fi
 	for ((i = 0 ; i < $LENTARGETS ; i++)); do
 		if [ -f "${TARGETS[$i]}" ] || [ -d "${TARGETS[$i]}" ]; then
-			if [ -f "${LINKNAMES[$i]}" ] || [ -d "${LINKNAMES[$i]}" ]; then 
+			if [ -f "${LINKNAMES[$i]}" ] || [ -d "${LINKNAMES[$i]}" ]; then
 				if [ $BACKUP -eq 1 ]; then
-					Message "Backing up ${LINKNAMES[$i]}."
-					RunCommand "mv -b '${LINKNAMES[$i]}' '${LINKNAMES[$i]}.bck'"
-				fi		
+					Message "Backing up ${LINKNAMES[$i]} to ${LINKNAMES[$i]}.bck"
+					if [ -f "${LINKNAMES[$i]}.bck" ] || [ -d "${LINKNAMES[$i]}.bck" ]; then
+					    Message "- Making space by moving ${LINKNAMES[$i]}.bck to /tmp/"
+					    RANDSTRING=$(cat /dev/urandom | tr -cd 'a-f0-9' | head -c 20)
+						RunCommand "mv '${LINKNAMES[$i]}.bck' '/tmp/$RANDSTRING'"
+					fi
+					Message "- Moving ${LINKNAMES[$i]} to ${LINKNAMES[$i]}.bck"
+					RunCommand "mv '${LINKNAMES[$i]}' '${LINKNAMES[$i]}.bck'"
+				fi
 			fi
 			Message "Creating symbolic link ${LINKNAMES[$i]} with target ${TARGETS[$i]}"
 			mkdir -p "$(dirname ${LINKNAMES[$i]})"

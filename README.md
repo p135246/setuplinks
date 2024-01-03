@@ -1,45 +1,59 @@
 # Setuplinks
 ## About
-The command `setuplinks input-file` creates a batch of symbolic links according to a given file `input-file` which contains on each line a target name and a link name relative to the home directory separated by TAB (use `#` at the beginning of the line to make a comment).
-It is useful to link files and folders in various cloud drives to the local machine when setting up a new computer and helps with organization.
-For example, instead of running
+The [Bash](https://www.gnu.org/software/bash/) script `setuplinks.sh` creates a symbolink link for each line `LINKNAME;TARGET;...` of an input file.
+
+The anticipated scenario involves a user who has some "global" folders synced with cloud (e.g., `~/OneDrive`, `~/Dropbox`, or `~/GoogleDrive` using [Insync](https://www.insynchq.com/)) and wants to link multiple of their subfiles and subfolders in the local file system separately.
+For example, instead of remembering and running
+```bash
+     ln -s ~/OneDrive/dotfiles/bashrc ~/.bashrc
+     ln -s ~/GoogleDrive/signature.svg ~/Pictures/signature.svg
+     ln -s ~/Dropbox/shared/collaborators/paper1 ~/papers/paper1
 ```
-     ln -s ~/Dropbox/dotfiles/bashrc ~/.bashrc
-     ln -s ~/OneDrive/Signature ~/Pictures/signature
-```
-one creates a file `my-links` containing
-```
-     # Dropbox
-     Dropbox/dotfiles/bashrc	.bashrc
+each time the user wants to set up his file hierarchy, he creates a file `setuplinks.csv` that contains the lines
+```csv
      # OneDrive
-     OneDrive/Signature		Pictures/signature
+     ~/.bashrc;~/OneDrive/dotfiles/bashrc
+     # GoogleDrive
+     ~/Pictures/signature.svg;~/GoogleDrive/signature.svg
+     # Dropbox
+     ~/papers/paper1;~/Dropbox/shared/collaborators/paper1
 ```
-and runs `setuplinks my-links`.
-Moreover, one can add the option `-b` to backup existing files or the option `-r` to revert files from backups.
-## Manual
+(where each line to be ignored by the programm must be prepended with `#`) and runs
+```bash
+setuplinks.sh setuplinks.csv
+```
+The script offers various modes of interaction and a backup solution.
+
+The following help is obtained by running `setuplinks.sh -h`.
+## Help
 ### NAME:
    setuplinks
 ### SYNTAX:
-   setuplinks [-b|d|f|h|i|r|s|v] CONTROLFILE
+   setuplinks [-b|d|f|h|i|r|s|v] FILE
 ### DESCRIPTION:
-   Creates symbolink links TARGET<-LINKNAME as specified in the
-   CONTROLFILE in two tab-separated columns relative to the user's HOME directory.
-   Runs 'ln' in the interactive mode and prints out progress by default.
-   
-   * **-b**       If LINKNAME exists, it is moved to LINKNAME.bck.
-                  If LINKNAME.bck exists, it is moved to LINKNAME.bck~
+   Creates a symbolink link `LINKNAME->TARGET` for each line of `FILE`
+   in the form `LINKNAME;TARGET`. Only lines starting with `#` are ignored.
+   By defualt, the interactive mode of `ln` is invoked (asks before 
+   replacement) and the progress is printed.
+### MODIFIERS:
+   * **-b**	Backup: If `LINKNAME` exists, it is moved to `LINKNAME.bck` (in the same folder).
           
-   * **-d**    Dry run.
+   * **-d**	Dry run: Does not make any changes on files.
    
-   * **-f**     If LINKNAME exists, it is deleted without confirmation.
+   * **-f**	Non-interactive mode of `ln`: If `LINKNAME` exists, it is 
+            deleted without confirmation.
    
-   * **-h**     Prints this help.
+   * **-h**	Prints this help.
    
-   * **-i**     Asks for confirmation before every file operation.
+   * **-i**	Interactive mode: Requires confirmation before every file operation.
   
-   * **-r**     Revert changes by replacing LINKNAME with LINKNAME.bck
+   * **-r**	Restore: If `LINKNAME.bck` exists, it is switched with `LINKNAME`.
  
-   * **-s**     Silent  mode. Does not print out progress.
+   * **-s**	Silent  mode: Does not print out any progress.
    
-   * **-v**     Verbose mode. Prints out every file operation.
+   * **-v**	Verbose mode: Prints out each file-command.
+### AUTHOR:
+   Written by Pavel Hajek.
+### COPYRIGHT
+   MIT License © 2021 Pavel Hajek
    
