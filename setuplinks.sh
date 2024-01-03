@@ -21,7 +21,7 @@ Help()
 	echo "SYNTAX:"
 	echo "   setuplinks [-b|d|f|h|i|r|s|v] FILE"
 	echo "DESCRIPTION:"
-	echo "   Creates a symbolink link LINKNAME->TARGET for each line of FILE"
+	echo "   Creates a symbolic link LINKNAME->TARGET for each line of FILE"
 	echo "   in the form 'LINKNAME;TARGET'. Only lines starting with '#' are ignored."
 	echo "   By default, the interactive mode of 'ln' is invoked (asks before"
 	echo "   replacement) and the progress is printed."
